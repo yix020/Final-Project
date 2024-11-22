@@ -5,14 +5,15 @@
 
     let data = [];
     let filteredData = [];
-    let selectedWorkLocation = "All"; // Default filter value
+    let selectedWorkLocation = "All"; // Default filter value for work location
+    let selectedStressLevel = "All"; // Default filter value for stress level
     const margin = { top: 60, right: 150, bottom: 50, left: 70 };
     const width = 800 - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
-    // Explicit work location options
-    const workLocations = ["All", "Remote", "Hybrid", "Onsite"];
-    const stressLevels = ["High", "Medium", "Low"]; // Predefined stress levels
+    // Work location options in desired order
+    const workLocations = ["Onsite", "Hybrid", "Remote"];
+    const stressLevels = ["All", "Low", "Medium", "High"]; // Predefined stress levels
 
     onMount(async () => {
         // Fetch and process the data
@@ -28,13 +29,12 @@
         drawChart();
     });
 
-    // Update chart based on filter
     function updateFilter() {
-        if (selectedWorkLocation === "All") {
-            filteredData = data; // Show all data
-        } else {
-            filteredData = data.filter(d => d.Work_Location === selectedWorkLocation);
-        }
+        // Filter data by work location and stress level
+        filteredData = data.filter(d =>
+            (selectedWorkLocation === "All" || d.Work_Location === selectedWorkLocation) &&
+            (selectedStressLevel === "All" || d.Stress_Level === selectedStressLevel)
+        );
         drawChart(); // Redraw chart with filtered data
     }
 
@@ -51,34 +51,32 @@
         );
 
         // Flatten grouped data into an array for easy plotting
-        const flattenedData = [];
-        groupedData.forEach(([workLocation, stressLevels]) => {
-            stressLevels.forEach(([stressLevel, count]) => {
-                flattenedData.push({ workLocation, stressLevel, count });
-            });
-        });
-
-        // Extract unique categories
-        const uniqueWorkLocations = [...new Set(flattenedData.map(d => d.workLocation))];
+        const flattenedData = workLocations.flatMap(workLocation =>
+            stressLevels.filter(level => level !== "All").map(stressLevel => ({
+                workLocation,
+                stressLevel,
+                count: groupedData.find(d => d[0] === workLocation)?.[1]?.find(d => d[0] === stressLevel)?.[1] || 0
+            }))
+        );
 
         // Scales
         const x0 = d3.scaleBand()
-            .domain(uniqueWorkLocations)
+            .domain(workLocations)
             .range([0, width])
             .padding(0.2);
 
         const x1 = d3.scaleBand()
-            .domain(stressLevels)
+            .domain(stressLevels.filter(level => level !== "All")) // Exclude "All" from the chart
             .range([0, x0.bandwidth()])
             .padding(0.1);
 
         const y = d3.scaleLinear()
-            .domain([0, d3.max(flattenedData, d => d.count) || 1]) // Avoid 0 max issues
+            .domain([0, d3.max(flattenedData, d => d.count)])
             .nice()
             .range([height, 0]);
 
         const color = d3.scaleOrdinal()
-            .domain(stressLevels)
+            .domain(stressLevels.filter(level => level !== "All")) // Exclude "All" from colors
             .range(d3.schemeTableau10);
 
         // Create the SVG container
@@ -94,8 +92,7 @@
             .attr("text-anchor", "middle")
             .style("font-size", "18px")
             .style("font-weight", "bold")
-            .text("Stress Levels Across Work Locations");
-
+            
         const plotGroup = svg
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -135,24 +132,24 @@
             .style("pointer-events", "none")
             .style("font-size", "12px");
 
-        // Add bars with tooltip interaction
+        // Add grouped bars with tooltip interaction
         plotGroup.append("g")
             .selectAll("g")
-            .data(flattenedData)
+            .data(workLocations) // Group by work location
             .enter()
             .append("g")
-            .attr("transform", d => `translate(${x0(d.workLocation)},0)`)
+            .attr("transform", d => `translate(${x0(d)},0)`) // Position groups
             .selectAll("rect")
-            .data(d => stressLevels.map(level => ({
+            .data(workLocation => stressLevels.filter(level => level !== "All").map(level => ({
                 level,
+                workLocation,
                 count: flattenedData.find(
-                    x => x.workLocation === d.workLocation && x.stressLevel === level
-                )?.count || 0,
-                workLocation: d.workLocation
+                    d => d.workLocation === workLocation && d.stressLevel === level
+                )?.count || 0
             })))
             .enter()
             .append("rect")
-            .attr("x", d => x1(d.level))
+            .attr("x", d => x1(d.level)) // Position within group
             .attr("y", d => y(d.count))
             .attr("width", x1.bandwidth())
             .attr("height", d => height - y(d.count))
@@ -160,6 +157,8 @@
             .on("mouseover", (event, d) => {
                 tooltip
                     .style("visibility", "visible")
+                    .style("top", `${event.pageY - 20}px`)
+                    .style("left", `${event.pageX + 20}px`)
                     .html(`
                         <strong>Stress Level:</strong> ${d.level}<br>
                         <strong>Work Location:</strong> ${d.workLocation}<br>
@@ -168,8 +167,8 @@
             })
             .on("mousemove", (event) => {
                 tooltip
-                    .style("top", `${event.pageY - 10}px`)
-                    .style("left", `${event.pageX + 10}px`);
+                    .style("top", `${event.pageY - 20}px`)
+                    .style("left", `${event.pageX + 20}px`);
             })
             .on("mouseout", () => {
                 tooltip.style("visibility", "hidden");
@@ -180,7 +179,7 @@
             .attr("transform", `translate(${width + margin.left + 20}, ${margin.top})`);
 
         legend.selectAll(".legend-item")
-            .data(stressLevels)
+            .data(stressLevels.filter(level => level !== "All")) // Exclude "All" from legend
             .enter()
             .append("g")
             .attr("class", "legend-item")
@@ -218,12 +217,22 @@
 </style>
 
 <div>
-    <label for="filter">Filter by Work Location: </label>
-    <select id="filter" bind:value={selectedWorkLocation} on:change={updateFilter}>
+    <label for="work-location-filter">Filter by Work Location: </label>
+    <select id="work-location-filter" bind:value={selectedWorkLocation} on:change={updateFilter}>
+        <option value="All">All</option>
         {#each workLocations as location}
             <option value={location}>{location}</option>
         {/each}
     </select>
+
+    <label for="stress-level-filter">Filter by Stress Level: </label>
+    <select id="stress-level-filter" bind:value={selectedStressLevel} on:change={updateFilter}>
+        <option value="All">All</option>
+        {#each stressLevels.filter(level => level !== "All") as level}
+            <option value={level}>{level}</option>
+        {/each}
+    </select>
 </div>
+
 
 <div id="chart"></div>
