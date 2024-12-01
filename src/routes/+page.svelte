@@ -1,10 +1,14 @@
 
+<script>
+    import StressLevelsChart from './MentalHealthBarChart.svelte'; // Import your bar chart component
+    import Heatmap from './Heatmap.svelte'; // Import the heatmap component
 
+</script>
 <style>
     main {
         display: flex;
         flex-direction: column;
-        align-items: center; /* Center content horizontally */
+        align-items: center; /*Center content horizontally */
         justify-content: center; /* Center content vertically */
         text-align: center;
         min-height: 100vh; /* Full height of the viewport */
@@ -15,92 +19,83 @@
     h1 {
         font-size: 2rem;
         margin-bottom: 1rem;
+        align-items: center;
     }
 
     #chart-container {
         width: 100%;
         max-width: 900px; /* Optional: Limit the width of the chart */
+        align-items: center;
     }
 
     h2 {
-        font-size: 1.5rem;
+        font-size: 1rem;
         margin-bottom: 1rem;
+    }
+
+    p {
+        font-size: 1rem;
+        line-height: 1.6;
+        max-width: 800px;
+        text-align: left;
+        margin-bottom: 2rem;
     }
 </style>
 
 <main>
     <h1>Is the Trend of Remote Work Positive or Negative?</h1>
-    <h2>Stress Levels Across Work Locations</h2>
+
+    <p>
+        <strong>Introduction</strong><br><br>
+        What is your job? Do you work in an office, or do you work from home in pajama pants? 
+        For many, remote work sounds ideal, but just a decade ago, this concept seemed far-fetched. 
+        Then, the global pandemic catalyzed a dramatic transformation. Almost overnight, schools, 
+        workplaces, meetings, and interviews moved online.
+        <br><br>
+        This shift marked the beginning of a new era. According to the Quarterly Economic Briefing 
+        in 2020, only 6% of U.S. employees primarily worked remotely before the pandemic, and 75% 
+        had never done so. In 2020, however, over 35% of employees were forced to work from home 
+        during the shutdown period.
+        <br><br>
+        As the pandemic subsided, life began to return to normal—but only partially. A 2020 PwC 
+        survey revealed that over 80% of employees wanted to continue working remotely at least 
+        one day a week. Many discovered the benefits of working from home, including flexibility 
+        and better work-life balance. This shift introduced three primary work models: on-site, 
+        fully remote, and hybrid, where employees split time between home and the office.
+        <br><br>
+        Yet, an interesting paradox arises: data suggests that remote workers report slightly 
+        higher stress levels compared to on-site or hybrid workers. This raises a key question: 
+        Is remote work a beneficial trend, or does it present hidden challenges for employees?
+        <br><br>
+        We conducted an in-depth analysis of 5,000 records collected from employees worldwide, 
+        examining how different work models correlate with both physical and mental health outcomes.
+    </p>
+
     <div id="chart-container"> <!-- Chart title moved above the chart -->
         <StressLevelsChart /> <!-- Embed your chart component -->
     </div>
 
-    <h2>Page Outline</h2>
-    <div style="margin-top: 2rem; font-family: Arial, sans-serif; line-height: 1.6; text-align: left;">
-        <p><strong>Introduction:</strong>
-            Why this topic? Any special phenomenon observed? Why does this topic matter? 
-            With remote work becoming a norm, its impact on mental health has been a topic of concern. 
-            Are people happier or more stressed working from home? Let's explore the data.
-        </p>
+    <p>
+        <strong>Analysis</strong><br><br>
+        The animation plot reveals that remote work is associated with a higher proportion of employees reporting High stress level compared to other work models. This trend suggests that remote work may be linked to increased stress for many employees. In contrast, onsite work shows a larger proportion of employees with Low stress level, indicating it is the least stressful work model overall. Hybrid work falls in the middle, with a more balanced distribution of stress levels, where Medium stress is the most prevalent.
+        <br><br>
+        These findings highlight a significant variation in stress levels across different work models. The higher prevalence of high stress among remote workers emphasizes the need for further exploration into the factors contributing to stress in remote work environments, while onsite and hybrid models may offer potential pathways for reducing stress in the workforce.
+    </p>
 
-        <h3>Body</h3>
-        <p><strong>Sub-topics to explore the relationship based on analysis of data:</strong></p>
-        <ul>
-            <li><strong>Job Category:</strong> Role, industry, and level of seniority vs. work location.</li>
-            <li><strong>Demographic (Employee):</strong> Age, gender, and region vs. work location.</li>
-            <li><strong>Working Schedule:</strong> Onsite vs. remote vs. hybrid:
-                <ul>
-                    <li>Working hours</li>
-                    <li>Number of virtual meetings</li>
-                    <li>Productivity</li>
-                </ul>
-            </li>
-            <li><strong>Health:</strong> 
-                <ul>
-                    <li>Physical (activity)</li>
-                    <li>Mental (social isolation, work-life balance, access to mental support, satisfaction with remote work, sleep quality)</li>
-                </ul>
-            </li>
-        </ul>
+    <div id="interactive-container">
+        <div id="heatmap">
+            <Heatmap /> <!-- Heatmap Component -->
+        </div>
 
-        <h3>Conclusion</h3>
-        <p>
-            What did we find from the above analysis? 
-            What's the conclusion? Is there a causal relationship or correlation between remote work and mental issues?
-        </p>
-        <p>
-            <strong>Recommendations:</strong> 
-            What suggestions to do something differently to improve employees' quality of both life and work? 
-            How should employers manage remote teams? 
-            How can workers maintain good mental health?
-        </p>
-        <h2>Writeup</h2>
-        <p>
-            For the initial prototype of our final project, we focused on two main tasks. The first was outlining the structure of our article, 
-            and the second was creating the interactive visualization. Our research topic centers around whether remote work impacts employees' mental health. 
-            Since the dataset includes three types of work styles—on-site, hybrid, and remote—we structured the article to explore the topic from different perspectives by 
-            comparing the patterns among these work styles. We conclude the article by discussing whether the remote work trend is beneficial or detrimental to employees and how 
-            they can cope with its challenges. To visually represent the data, we used a bar chart to display the distribution of stress levels across the different work styles. We incorporated an interactive 
-            filtering bar that allows the audience to explore various stress levels and work styles.
-            The most challenging aspect of developing the initial prototype was determining the appropriate visualizations to include in the structure. Initially, we planned to visualize 
-            the relationship between mental conditions and the three work styles to provide an initial glimpse of how remote work might affect mental health. However, the data didn't show 
-            significant differences in mental conditions across the work styles. As a result, we explored other variables, such as stress levels. We found that stress level provided a clearer 
-            metric for differentiating patterns among the work styles. We decided to feature this graph at the beginning of the article to pose a question to the audience, introduce the topic, and encourage them to engage with the analysis in the following sections.
-            We incorporated an interactive filtering bar that allows the audience to explore various stress levels and work styles.
-        </p>
-        <p>
-            The most challenging aspect of developing the initial prototype was determining the appropriate visualizations to include in the structure. 
-            Initially, we planned to visualize the relationship between mental conditions and the three work styles to provide an initial glimpse of how remote work might affect mental health. However, the data didn't show significant differences in mental conditions across the work styles. 
-            As a result, we explored other variables, such as stress levels. We found that stress level provided a clearer metric for differentiating patterns among the work styles.
-            We decided to feature this graph at the beginning of the article to pose a question to the audience, introduce the topic, and encourage them to engage with the analysis in the following sections.
-
-        </p>
     </div>
-    
+
+    <p>
+        Beyond variations in stress levels across work models, our heatmap and pie chart analyses offer deeper insights into the interplay between stress, mental health conditions, and access to resources. The heatmap highlights distinct patterns, with High Stress Levels frequently linked to specific mental health conditions. This finding aligns with the observation that remote work environments see higher proportions of employees experiencing high stress. The concentration of high-stress conditions in these contexts suggests that mental health challenges may exacerbate stress for remote workers.
+        <br><br>
+        The pie chart further uncovers disparities in resource accessibility for these groups. Notably, individuals in high-stress categories often report limited access to mental health resources, as shown by the larger "No" segments in the pie chart for these conditions. This lack of support may compound the challenges faced by remote workers. In contrast, conditions linked to Low Stress Levels, more common in onsite work models, demonstrate significantly better resource availability. The combination of supportive conditions and accessible resources may help explain why onsite work is associated with lower stress levels.
+        <br><br>
+        These findings underscore the importance of addressing resource disparities to alleviate stress for high-stress groups, particularly in remote work settings. By improving access to mental health resources and tailoring interventions for specific conditions, employers can mitigate the stress disparities observed and foster healthier work environments across all models.
+    </p>
 
 </main>
-
-<script>
-    import StressLevelsChart from './MentalHealth.svelte'; // Import your chart component
-</script>
 

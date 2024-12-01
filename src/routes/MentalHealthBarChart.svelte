@@ -1,4 +1,3 @@
-
 <script>
     import { onMount } from "svelte";
     import * as d3 from "d3";
@@ -7,15 +6,18 @@
     let filteredData = [];
     let selectedWorkLocation = "All"; // Default filter value for work location
     let selectedStressLevel = "All"; // Default filter value for stress level
-    const margin = { top: 60, right: 150, bottom: 50, left: 70 };
-    const width = 800 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+    let loading = true; // Flag for showing the loading animation
+    let observer; // Intersection Observer variable
 
-    // Work location options in desired order
+    const margin = { top: 60, right: 150, bottom: 50, left: 70 };
+    const width = 600 - margin.left - margin.right;
+    const height = 300 - margin.top - margin.bottom;
+
     const workLocations = ["Onsite", "Hybrid", "Remote"];
-    const stressLevels = ["All", "Low", "Medium", "High"]; // Predefined stress levels
+    const stressLevels = ["High", "Medium", "Low"]; // Predefined stress levels
 
     onMount(async () => {
+        loading = true; // Show loading animation
         // Fetch and process the data
         data = await d3.csv(
             'https://raw.githubusercontent.com/yix020/Final-Project/refs/heads/main/static/cleaned_data%20-%20cleaned_data%20copy.csv',
@@ -27,15 +29,48 @@
 
         filteredData = data; // Initialize filtered data
         drawChart();
+
+        loading = false; // Hide loading animation
+
+        // Setup the Intersection Observer
+        setupObserver();
     });
 
-    function updateFilter() {
+    function setupObserver() {
+        const chartElement = document.getElementById("chart");
+
+        observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    resetAnimation(); // Reset chart and animation state
+                    startAutomaticTransition(); // Start the animation
+                }
+            },
+            { threshold: 0.5 } // Trigger when 50% of the chart is visible
+        );
+
+        observer.observe(chartElement);
+    }
+
+    function resetAnimation() {
+        // Clear the chart and reset the selected stress level
+        selectedStressLevel = "All";
+        filteredData = data; // Reset filtered data
+        drawChart(); // Redraw chart with initial data
+    }
+
+    function updateFilter(stressLevel = "All") {
+        loading = true; // Show loading animation
+        selectedStressLevel = stressLevel; // Update the stress level filter
+
         // Filter data by work location and stress level
         filteredData = data.filter(d =>
             (selectedWorkLocation === "All" || d.Work_Location === selectedWorkLocation) &&
-            (selectedStressLevel === "All" || d.Stress_Level === selectedStressLevel)
+            (stressLevel === "All" || d.Stress_Level === stressLevel)
         );
+
         drawChart(); // Redraw chart with filtered data
+        loading = false; // Hide loading animation
     }
 
     function drawChart() {
@@ -52,7 +87,7 @@
 
         // Flatten grouped data into an array for easy plotting
         const flattenedData = workLocations.flatMap(workLocation =>
-            stressLevels.filter(level => level !== "All").map(stressLevel => ({
+            stressLevels.map(stressLevel => ({
                 workLocation,
                 stressLevel,
                 count: groupedData.find(d => d[0] === workLocation)?.[1]?.find(d => d[0] === stressLevel)?.[1] || 0
@@ -66,7 +101,7 @@
             .padding(0.2);
 
         const x1 = d3.scaleBand()
-            .domain(stressLevels.filter(level => level !== "All")) // Exclude "All" from the chart
+            .domain(stressLevels)
             .range([0, x0.bandwidth()])
             .padding(0.1);
 
@@ -76,8 +111,8 @@
             .range([height, 0]);
 
         const color = d3.scaleOrdinal()
-            .domain(stressLevels.filter(level => level !== "All")) // Exclude "All" from colors
-            .range(d3.schemeTableau10);
+            .domain(stressLevels)
+            .range([d3.schemeTableau10[2], d3.schemeTableau10[1], d3.schemeTableau10[0]]); // "High" gets "Low" color, and vice versa
 
         // Create the SVG container
         const svg = d3.select("#chart")
@@ -92,7 +127,12 @@
             .attr("text-anchor", "middle")
             .style("font-size", "18px")
             .style("font-weight", "bold")
-            
+            .text(
+                selectedStressLevel === "All"
+                    ? "Stress Levels Across Work Locations"
+                    : `Stress Level: ${selectedStressLevel}`
+            );
+
         const plotGroup = svg
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -106,8 +146,7 @@
             .style("text-anchor", "middle");
 
         // Add Y axis
-        plotGroup.append("g")
-            .call(d3.axisLeft(y));
+        plotGroup.append("g").call(d3.axisLeft(y));
 
         // Add Y-axis label
         plotGroup.append("text")
@@ -119,20 +158,7 @@
             .style("font-size", "12px")
             .text("Number of Employees");
 
-        // Create tooltip
-        const tooltip = d3.select("#chart")
-            .append("div")
-            .style("position", "absolute")
-            .style("background", "#fff")
-            .style("border", "1px solid #ccc")
-            .style("padding", "8px")
-            .style("border-radius", "4px")
-            .style("box-shadow", "0px 2px 6px rgba(0,0,0,0.1)")
-            .style("visibility", "hidden")
-            .style("pointer-events", "none")
-            .style("font-size", "12px");
-
-        // Add grouped bars with tooltip interaction
+        // Add grouped bars
         plotGroup.append("g")
             .selectAll("g")
             .data(workLocations) // Group by work location
@@ -140,7 +166,7 @@
             .append("g")
             .attr("transform", d => `translate(${x0(d)},0)`) // Position groups
             .selectAll("rect")
-            .data(workLocation => stressLevels.filter(level => level !== "All").map(level => ({
+            .data(workLocation => stressLevels.map(level => ({
                 level,
                 workLocation,
                 count: flattenedData.find(
@@ -150,58 +176,59 @@
             .enter()
             .append("rect")
             .attr("x", d => x1(d.level)) // Position within group
-            .attr("y", d => y(d.count))
+            .attr("y", height)
             .attr("width", x1.bandwidth())
-            .attr("height", d => height - y(d.count))
+            .attr("height", 0)
             .attr("fill", d => color(d.level))
-            .on("mouseover", (event, d) => {
-                tooltip
-                    .style("visibility", "visible")
-                    .style("top", `${event.pageY - 20}px`)
-                    .style("left", `${event.pageX + 20}px`)
-                    .html(`
-                        <strong>Stress Level:</strong> ${d.level}<br>
-                        <strong>Work Location:</strong> ${d.workLocation}<br>
-                        <strong>Employees:</strong> ${d.count}
-                    `);
-            })
-            .on("mousemove", (event) => {
-                tooltip
-                    .style("top", `${event.pageY - 20}px`)
-                    .style("left", `${event.pageX + 20}px`);
-            })
-            .on("mouseout", () => {
-                tooltip.style("visibility", "hidden");
-            });
+            .transition()
+            .duration(2500) // Slower animation
+            .ease(d3.easeCubicOut)
+            .attr("y", d => y(d.count))
+            .attr("height", d => height - y(d.count));
 
-        // Add legend
-        const legend = svg.append("g")
+                // Add legend
+                const legend = svg.append("g")
             .attr("transform", `translate(${width + margin.left + 20}, ${margin.top})`);
 
-        legend.selectAll(".legend-item")
-            .data(stressLevels.filter(level => level !== "All")) // Exclude "All" from legend
-            .enter()
-            .append("g")
-            .attr("class", "legend-item")
-            .attr("transform", (d, i) => `translate(0, ${i * 20})`)
-            .each(function(d) {
-                d3.select(this)
-                    .append("rect")
-                    .attr("width", 18)
-                    .attr("height", 18)
-                    .style("fill", color(d));
+        stressLevels.forEach((level, i) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(0, ${i * 20})`);
 
-                d3.select(this)
-                    .append("text")
-                    .attr("x", 24)
-                    .attr("y", 9)
-                    .attr("dy", ".35em")
-                    .style("text-anchor", "start")
-                    .style("font-size", "12px")
-                    .text(d);
-            });
+            // Legend color box
+            legendRow.append("rect")
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("fill", color(level));
+
+            // Legend text
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 12)
+                .style("text-anchor", "start")
+                .style("font-size", "12px")
+                .text(level);
+        });
+
+    }
+
+    function startAutomaticTransition() {
+        const steps = ["All", "Low", "Medium", "High"];
+        let stepIndex = 0;
+
+        function nextStep() {
+            updateFilter(steps[stepIndex]);
+            stepIndex++;
+
+            // Stop the animation after "High stress level"
+            if (stepIndex < steps.length) {
+                setTimeout(nextStep, 5000); // 5-second delay between steps
+            }
+        }
+
+        nextStep(); // Start the first step
     }
 </script>
+
 
 <style>
     #chart {
@@ -214,25 +241,27 @@
         padding: 0.5rem;
         font-size: 1rem;
     }
+
+    .loading-container {
+        text-align: center;
+        margin-top: 2rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
 </style>
 
-<div>
-    <label for="work-location-filter">Filter by Work Location: </label>
-    <select id="work-location-filter" bind:value={selectedWorkLocation} on:change={updateFilter}>
-        <option value="All">All</option>
-        {#each workLocations as location}
-            <option value={location}>{location}</option>
-        {/each}
-    </select>
-
+<!-- <div>
     <label for="stress-level-filter">Filter by Stress Level: </label>
     <select id="stress-level-filter" bind:value={selectedStressLevel} on:change={updateFilter}>
         <option value="All">All</option>
-        {#each stressLevels.filter(level => level !== "All") as level}
+        {#each stressLevels as level}
             <option value={level}>{level}</option>
         {/each}
     </select>
-</div>
+</div> -->
 
+{#if loading}
+    <div class="loading-container">Loading data...</div>
+{/if}
 
-<div id="chart"></div>
+<div id="chart" style:display={loading ? "none" : "block"}></div>
