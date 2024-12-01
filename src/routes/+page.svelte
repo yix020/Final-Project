@@ -1,7 +1,7 @@
 
 <script>
     import StressLevelsChart from './MentalHealthBarChart.svelte'; // Import your bar chart component
-    import Heatmap from './Heatmap.svelte'; // Import the heatmap component
+    import Heatmap from './heatmap.svelte'; // Import the heatmap component
 
 </script>
 <style>
