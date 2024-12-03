@@ -2,6 +2,7 @@
 <script>
     import StressLevelsChart from './MentalHealthBarChart.svelte'; // Import your bar chart component
     import Heatmap from './heatmap.svelte'; // Import the heatmap component
+    import Barchart from './barchart.svelte';
 
 </script>
 <style>
@@ -96,6 +97,21 @@
         <br><br>
         These findings underscore the importance of addressing resource disparities to alleviate stress for high-stress groups, particularly in remote work settings. By improving access to mental health resources and tailoring interventions for specific conditions, employers can mitigate the stress disparities observed and foster healthier work environments across all models.
     </p>
+
+    <div id="barchart-container">
+        <div id="Barchart">
+            <Barchart/> 
+        </div>
+
+    </div>
+    
+    <p>
+        This interactive visualization allows users to explore the relationship between stress levels, job roles, industries, and work models (remote, onsite, hybrid). It includes interactive filters to compare different roles and industries. The stacked bar chart shows stress levels, with tooltips displaying the number of employees in each category. The color palette is intentionally designed to highlight only “High” and “Low” stress levels, as these are the key indicators most relevant to users.
+        <br><br>
+        Notably, distinct patterns emerge across roles and industries: software engineers report lower stress levels while working remotely compared to onsite, whereas designers report higher stress when remote. Similarly, employees in Education experience lower stress levels when onsite, while those in the Finance industry report significantly higher stress when working remotely. This visualization provides the ability to highlight these correlations, enabling users to better understand how stress levels vary depending on job role, industry, and work model.
+
+    </p>
+
 
 </main>
 
