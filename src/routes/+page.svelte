@@ -3,6 +3,8 @@
     import StressLevelsChart from './MentalHealthBarChart.svelte'; // Import your bar chart component
     import Heatmap from './heatmap.svelte'; // Import the heatmap component
     import Barchart from './barchart.svelte';
+    import Bubblemap from './map.svelte';
+    import Plot from './plot.svelte';
 
 </script>
 <style>
@@ -98,6 +100,22 @@
         These findings underscore the importance of addressing resource disparities to alleviate stress for high-stress groups, particularly in remote work settings. By improving access to mental health resources and tailoring interventions for specific conditions, employers can mitigate the stress disparities observed and foster healthier work environments across all models.
     </p>
 
+
+    <div id= "map-container">
+        <div id="map">
+            <Bubblemap />
+        </div>
+    </div>
+
+    <p>
+        This scatter plot visualizes the employee count across different age groups and stress levels. The size of the points represents the number of employees, while the color indicates the stress level: green for Low, orange for Medium, and red for High. The X-axis represents the age groups, sorted in ascending order, and the Y-axis indicates the number of employees in each group.
+        <br><br>
+        The plot reveals that employees with Low stress levels (green) are evenly distributed across most age groups, while Medium stress levels (orange) dominate in certain age ranges, particularly in the mid-30s to 40s. High stress levels (red) are less frequent but appear consistently across various ages, with some clusters in younger employees. Larger points in the mid-age groups suggest higher employee concentrations, likely correlating with more experienced workers or common age ranges in the workforce.
+        <br><br>
+        This plot provides insights into how age and stress levels interact, highlighting potential areas for targeted interventions, such as stress management programs for high-stress groups or further investigation into the causes of stress among specific age ranges.
+
+    </p>
+
     <div id="barchart-container">
         <div id="Barchart">
             <Barchart/> 
@@ -106,12 +124,37 @@
     </div>
     
     <p>
-        This interactive visualization allows users to explore the relationship between stress levels, job roles, industries, and work models (remote, onsite, hybrid). It includes interactive filters to compare different roles and industries. The stacked bar chart shows stress levels, with tooltips displaying the number of employees in each category. The color palette is intentionally designed to highlight only “High” and “Low” stress levels, as these are the key indicators most relevant to users.
-        <br><br>
-        Notably, distinct patterns emerge across roles and industries: software engineers report lower stress levels while working remotely compared to onsite, whereas designers report higher stress when remote. Similarly, employees in Education experience lower stress levels when onsite, while those in the Finance industry report significantly higher stress when working remotely. This visualization provides the ability to highlight these correlations, enabling users to better understand how stress levels vary depending on job role, industry, and work model.
+        We can use this tool to explore how stress levels vary across different roles and industries. Notably, distinct patterns emerge. For example, software engineers report lower stress levels when working remotely compared to onsite, while designers experience higher stress when working remotely. Similarly, employees in Education report lower stress levels when onsite, whereas those in the Finance industry report significantly higher stress levels when working remotely. Additionally, we can compare the stress levels of data scientists across different industries, such as healthcare, IT, and consulting.
 
     </p>
 
+    <div id="barchart2-container">
+        <div id="bar">
+            <Plot/> 
+        </div>
 
+    </div>
+
+    <p>
+        The grouped bar plot visualizes the distribution of employees based on stress levels (Low, Medium, High) and hours worked per week (&lt;30, 30-40, &gt;40). It shows that the 30-40 hours category is the most common across all stress levels, while the &lt;30 and &gt;40 hours categories exhibit more variability. Employees in the High-Stress group are more likely to work over 40 hours per week, whereas the Low-Stress group demonstrates a more balanced distribution across all hours categories. The Medium Stress group has the most uniform distribution.
+
+    </p>
+
+    <p>
+        <strong>Conclusion & Summary </strong><br><br>
+        In this analysis, we examined how different work models relate to employees’ stress levels and work schedules, considering factors such as mental health, access to mental health resources, age, roles, industries, and weekly working hours. At first glance, it seems that remote work may lead to higher stress levels for employees. However, after exploring various subcategories, we found that while there is a relationship between stress levels and work models, it is not strongly significant. Nevertheless, we can still draw some important insights.
+        <br><br>
+        It is clear that high-stress levels are strongly correlated with mental health issues like burnout and anxiety, and a significant portion of employees report lacking access to mental health resources. This suggests that we should pay more attention to employee mental health, regardless of the work model. Specifically, we could offer programs such as stress relief consultations, exercise activities, or even mindfulness classes, as studies have shown that physical activity improves both mental and emotional well-being. Additionally, based on the data regarding roles and industries, we could adjust the allocation of resources to industries with higher stress levels to provide more targeted support.
+        
+    </p>
+ 
+    <p>
+        <strong>Reference </strong> <br><br>
+        Coate, Patrick. “Remote Work Before, During, and After the Pandemic”. Jan 25, 2021.
+        https://www.ncci.com/SecureDocuments/QEB/QEB_Q4_2020_RemoteWork.html
+
+
+
+    </p>
 </main>
 
